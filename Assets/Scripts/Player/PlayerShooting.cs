@@ -2,10 +2,9 @@
 
 public class PlayerShooting : MonoBehaviour
 {
-    public int damagePerShot = 20;//玩家每一枪的伤害
-    public float timeBetweenBullets = 0.15f;//射速
+    public int damagePerShot;//玩家每一枪的伤害
+    public float timeBetweenBullets;//射速
     public float range = 100f;//子弹的射程
-
 
     private float timer;//计时器，用来计算是否达到射击时间
     private Ray shootRay = new Ray();//射击射线
@@ -18,6 +17,12 @@ public class PlayerShooting : MonoBehaviour
     private float effectsDisplayTime = 0.2f;//开枪效果持续时间
 
     private Animator anim;
+    private string gunType;
+    private Transform defaultWeapon;//默认为手枪状态
+    private int bullet;
+
+    private GameObject player;
+    private PlayerWeapon playerWeapon;
 
     void Awake ()
     {
@@ -27,6 +32,12 @@ public class PlayerShooting : MonoBehaviour
         gunAudio = GetComponent<AudioSource> ();
         gunLight = GetComponent<Light> ();
         anim = GetComponentInParent<Animator>();
+        defaultWeapon = transform.parent.parent.Find("Weapon_Pistol");
+        player = GameObject.FindGameObjectWithTag("Player");
+        playerWeapon = player.GetComponent<PlayerWeapon>();
+        bullet = playerWeapon.gunBullet;
+        BulletManager.bulletNumber = bullet;
+        //Debug.Log(BulletManager.bulletNumber);
     }
 
 
@@ -34,17 +45,102 @@ public class PlayerShooting : MonoBehaviour
     {
         timer += Time.deltaTime;//更新计时器
 
+        BulletManager.bulletNumber = playerWeapon.gunBullet;
+
         //Debug.Log(anim.name);
+
+        gunType = this.name;
 
         //如果按下开火键（鼠标左键）且时间大于每一枪间隔时间则射击
 		if(Input.GetButton ("Fire1") && timer >= timeBetweenBullets && Time.timeScale != 0)
-        {
-            Shoot ();
-            anim.SetBool("IsShoot", true);//设置Animator中的IsShoot参数
+        {   
+            switch (gunType)
+            {
+                case "PistolHead":
+                    Shoot();
+                    anim.SetBool("IsPistolShoot", true);
+                    break;
+
+                case "AKHead":
+                    Shoot();
+                    anim.SetBool("IsAKShoot", true);
+                    playerWeapon.gunBullet--;
+                    
+                    //用完子弹
+                    if (playerWeapon.gunBullet == 0)
+                    {
+                        this.transform.parent.gameObject.SetActive(false);
+                        anim.SetBool("IsAKShoot", false);
+                        defaultWeapon.gameObject.SetActive(true);
+                        playerWeapon.UpdateCurrentGun();//更新当前枪
+                        playerWeapon.UpdateGunBullet();//更新当前子弹
+                        //Debug.Log(defaultWeapon.name);
+                    }
+                    //Debug.Log(gunType);
+                    break;
+
+                case "ShortgunHead":
+                    Shoot();
+                    anim.SetBool("IsShortgunShoot", true);
+                    playerWeapon.gunBullet--;
+
+                    //用完子弹
+                    if (playerWeapon.gunBullet == 0)
+                    {
+                        this.transform.parent.gameObject.SetActive(false);
+                        anim.SetBool("IsShortgunShoot", false);
+                        defaultWeapon.gameObject.SetActive(true);
+                        playerWeapon.UpdateCurrentGun();//更新当前枪
+                        playerWeapon.UpdateGunBullet();//更新当前子弹
+                        //Debug.Log(defaultWeapon.name);
+                    }
+                    //Debug.Log(gunType);
+                    break;
+
+                case "MinigunHead":
+                    Shoot();
+                    anim.SetBool("IsMinigunShoot", true);
+                    playerWeapon.gunBullet--;
+
+                    //用完子弹
+                    if (playerWeapon.gunBullet == 0)
+                    {
+                        this.transform.parent.gameObject.SetActive(false);
+                        anim.SetBool("IsMinigunShoot", false);
+                        defaultWeapon.gameObject.SetActive(true);
+                        playerWeapon.UpdateCurrentGun();//更新当前枪
+                        playerWeapon.UpdateGunBullet();//更新当前子弹
+                        //Debug.Log(defaultWeapon.name);
+                    }
+                    //Debug.Log(gunType);
+                    break;
+            }
         }
         else
         {
-            anim.SetBool("IsShoot", false);//设置Animator中的IsShoot参数
+            switch (gunType)
+            {
+                case "PistolHead":
+                    anim.SetBool("IsPistolShoot", false);
+                    player.GetComponent<PlayerMovement>().speed = 6.0f;
+                    break;
+                case "AKHead":
+                    anim.SetBool("IsAKShoot", false);
+                    //修改玩家速度
+                    player.GetComponent<PlayerMovement>().speed = 5.0f;
+                    break;
+                case "ShortgunHead":
+                    anim.SetBool("IsShortgunShoot", false);
+                    //修改玩家速度
+                    player.GetComponent<PlayerMovement>().speed = 4.8f;
+                    break;
+                case "MinigunHead":
+                    anim.SetBool("IsMinigunShoot", false);
+                    //修改玩家速度
+                    player.GetComponent<PlayerMovement>().speed = 4.0f;
+                    break;
+            }
+            
         }
 
         //如果超过开枪效果持续时间，取消开枪效果
@@ -96,5 +192,6 @@ public class PlayerShooting : MonoBehaviour
         {
             gunLine.SetPosition (1, shootRay.origin + shootRay.direction * range);//设置子弹射线的起始点和终止点，终止点为射程最远处
         }
+
     }
 }

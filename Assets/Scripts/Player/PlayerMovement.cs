@@ -4,6 +4,8 @@ public class PlayerMovement : MonoBehaviour
 {
     public float speed = 6f;//玩家速度
 
+    public Texture aimPicture;//准心图片
+
     private Vector3 movement;//玩家移动
     private Animator anim;//玩家动画状态机
     private Rigidbody playerRigidbody;//玩家刚体
@@ -25,7 +27,7 @@ public class PlayerMovement : MonoBehaviour
 
         Move(h, v);
         Turning();
-        Animating(h, v);
+        Animating(h, v);      
     }
 
     //玩家移动
@@ -48,6 +50,7 @@ public class PlayerMovement : MonoBehaviour
         //如果射线击中Floor
         if(Physics.Raycast(camRay,out floorHit, camRayLength, floorMask))
         {
+
             Vector3 playerToMouse = floorHit.point - this.transform.position;//计算玩家朝向方向，即鼠标所在位置和玩家所在位置的差
             playerToMouse.y = 0f;//保证玩家不会倾倒
             //设置玩家朝向
@@ -62,6 +65,16 @@ public class PlayerMovement : MonoBehaviour
     {
         bool walking = h != 0f || v != 0f;//如果h或者v有一个不是0说明玩家在移动
         anim.SetBool("IsWalking", walking);//设置Animator中的IsWalking参数
+    }
+
+    //绘制准心
+    void OnGUI()
+    {
+        Rect rect = new Rect(Input.mousePosition.x - (aimPicture.width >> 1),
+            Screen.height - Input.mousePosition.y - (aimPicture.height >> 1),
+            aimPicture.width, aimPicture.height);
+
+        GUI.DrawTexture(rect, aimPicture);
     }
 
 }

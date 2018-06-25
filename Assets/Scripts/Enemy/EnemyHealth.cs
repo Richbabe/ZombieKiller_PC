@@ -76,6 +76,8 @@ public class EnemyHealth : MonoBehaviour
 
         DeathParticles.Play();//播放死亡粒子系统
 
+        isSinking = true;
+
         GetComponent<UnityEngine.AI.NavMeshAgent>().enabled = false;//禁用死亡敌人的NavMeshAgent属性
         GetComponent<Rigidbody>().isKinematic = true;//将刚体属性设置成运动学的，即不受物理力控制
         ScoreManager.score += scoreValue;//计分

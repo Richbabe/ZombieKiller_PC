@@ -10,6 +10,7 @@ public class CameraFollow : MonoBehaviour {
 
     void Start()
     {
+        Cursor.visible = false;
         offset = this.transform.position - target.position;//初始化偏移值
     }
 
